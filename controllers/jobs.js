@@ -45,7 +45,9 @@ const getJob = async (req, res) => {
     throw new NotFoundError(`No job found with ID ${jobId}`);
   }
 
-  res.status(StatusCodes.OK).json({ job });
+  const editable = job.createdBy.toString() === userId.toString();
+
+  res.status(StatusCodes.OK).json({ job: { ...job.toObject(), editable } });
 };
 
 const createJob = async (req, res) => {
