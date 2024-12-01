@@ -4,26 +4,28 @@ const JobSchema = new mongoose.Schema(
   {
     company: {
       type: String,
-      require: [true, "Please provide comnpany name"],
-      maxlength: 50,
-    },
-
-    position: {
-      type: String,
-      require: [true, "Please provide position"],
+      required: [true, "Please provide company name"],
       maxlength: 100,
     },
-
+    position: {
+      type: String,
+      required: [true, "Please provide position"],
+      maxlength: 100,
+    },
+    location: {
+      type: String,
+      required: [true, "Please provide company name"],
+      maxlength: 100,
+    },
     status: {
       type: String,
-      enum: ["Interview", "declined", "pending"],
-      default: "pending",
+      enum: ["Open", "Closed"],
+      default: "Open",
     },
-
     createdBy: {
       type: mongoose.Types.ObjectId,
       ref: "User",
-      require: [true, "Please provide user"],
+      required: [true, "Please provide user"],
     },
   },
   { timestamps: true }
