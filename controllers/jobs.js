@@ -1,11 +1,21 @@
 const Job = require("../models/Job");
+const Applicant = require("../models/Applicant");
+const User = require("../models/User");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, NotFoundError } = require("../errors");
 
 const getAllJobs = async (req, res) => {
-  const { status, position, sort, page = 1, limit = 10 } = req.query;
+  const {
+    status,
+    position,
+    sort,
+    page = 1,
+    limit = 10,
+    forLoggedInUser = false,
+  } = req.query;
 
-  const queryObject = { createdBy: req.user.userId };
+  const queryObject = {};
+  if (forLoggedInUser) queryObject.createdBy = req.user.userId;
 
   // Add filters
   if (status) queryObject.status = status;
@@ -41,21 +51,32 @@ const getJob = async (req, res) => {
     // createdBy: userId,
   });
 
+  const applicants = await Applicant.find({ jobId }).select("userId");
+  const applicantIds = applicants.map((applicant) =>
+    applicant.userId.toString()
+  );
+  const userPresent = applicantIds && applicantIds.includes(userId);
+  console.log("applicants are----", applicants);
   if (!job) {
     throw new NotFoundError(`No job found with ID ${jobId}`);
   }
 
-  const editable = job.createdBy.toString() === userId.toString();
+  const editable =
+    job.createdBy && job.createdBy.toString() === userId.toString();
 
-  res.status(StatusCodes.OK).json({ job: { ...job.toObject(), editable } });
+  res.status(StatusCodes.OK).json({
+    job: { ...job.toObject(), editable },
+    applicants: applicantIds,
+    userPresent: userPresent,
+  });
 };
 
 const createJob = async (req, res) => {
-  const { company, position } = req.body;
+  // const { company, position } = req.body;
 
-  if (!company || !position) {
-    throw new BadRequestError("Company and position are required fields.");
-  }
+  // if (!company || !position) {
+  //   throw new BadRequestError("Company and position are required fields.");
+  // }
 
   req.body.createdBy = req.user.userId;
 
@@ -66,11 +87,11 @@ const createJob = async (req, res) => {
 const updateJob = async (req, res) => {
   const {
     user: { userId },
-    params: { id: jobId },
-    body: { company, position, status },
+    params: { jobId: jobId },
+    body: { company, position, status, location },
   } = req;
 
-  if (!company && !position && !status) {
+  if (!company && !position && !status && !location) {
     throw new BadRequestError(
       "At least one field must be provided for update."
     );
@@ -92,7 +113,7 @@ const updateJob = async (req, res) => {
 const deleteJob = async (req, res) => {
   const {
     user: { userId },
-    params: { id: jobId },
+    params: { jobId: jobId },
   } = req;
 
   const job = await Job.findOneAndDelete({
@@ -108,8 +129,7 @@ const deleteJob = async (req, res) => {
 };
 
 const applyToJob = async (req, res) => {
-  const { jobId } = req.params;
-  const { resumeLink } = req.body;
+  const { jobId, resumeLink } = req.body;
 
   // Validate input
   if (!resumeLink) {

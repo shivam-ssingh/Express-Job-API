@@ -15,6 +15,7 @@ const auth = (req, res, next) => {
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
 
+    console.log("user ID", payload.userId, "name", payload.name);
     req.user = { userId: payload.userId, name: payload.name };
 
     next();

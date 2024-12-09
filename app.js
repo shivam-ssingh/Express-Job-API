@@ -1,8 +1,11 @@
 require("dotenv").config();
 require("express-async-errors");
-
 const express = require("express");
 const app = express();
+
+//cor
+const cors = require("cors");
+app.use(cors());
 
 // connectDB
 const connectDB = require("./db/connect");
@@ -24,6 +27,16 @@ app.use("/api/v1/jobs", authenticatedUser, jobsRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
+
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, authorization"
+  );
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
+  next();
+});
 
 const port = process.env.PORT || 3000;
 
