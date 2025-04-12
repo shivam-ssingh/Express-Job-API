@@ -5,7 +5,13 @@ const app = express();
 
 //cor
 const cors = require("cors");
-app.use(cors());
+
+app.use(
+  cors({
+    origin: "https://react-job-portal-react.onrender.com",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  })
+);
 
 // connectDB
 const connectDB = require("./db/connect");
