@@ -103,6 +103,8 @@ const updateJob = async (req, res) => {
     { new: true, runValidators: true }
   );
 
+  console.log("Update job.....", job);
+
   if (!job) {
     throw new NotFoundError(`No job found with ID ${jobId}`);
   }
@@ -116,6 +118,8 @@ const deleteJob = async (req, res) => {
     params: { jobId: jobId },
   } = req;
 
+  console.log("Job Id..", jobId);
+  console.log("user Id..", userId);
   const job = await Job.findOneAndDelete({
     _id: jobId,
     createdBy: userId,
